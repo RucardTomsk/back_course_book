@@ -1,0 +1,5 @@
+port: "5050"
+
+db:
+  uri:  "bolt://localhost:7687"
+  username: "course_bot"
