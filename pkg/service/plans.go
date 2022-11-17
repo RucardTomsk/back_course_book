@@ -75,8 +75,9 @@ func (s *PlansService) GetField(guid_plan string, key_field string) (string, err
 	return s.repo.GetField(guid_plan, key_field)
 }
 
-func (s *PlansService) CreatePlans(NameDiscipline string, ByteTable []byte) error {
+func (s *PlansService) CreatePlans(NameDiscipline string, ByteTable []byte, guid_faculty string) error {
 	logrus.Info("Start CreatePlans")
+
 	wb, err := xlsx.OpenBinary(ByteTable)
 	if err != nil {
 		return err
@@ -93,9 +94,13 @@ func (s *PlansService) CreatePlans(NameDiscipline string, ByteTable []byte) erro
 	}
 
 	CellDT, _ := sheetTitel.Cell(28, xlsx.ColLettersToIndex("D"))
+	CellDTValue := strings.TrimSuffix(strings.TrimPrefix(CellDT.Value, "Направление подготовки "), "_x000D_\n")
 	CellPP, _ := sheetTitel.Cell(29, xlsx.ColLettersToIndex("D"))
-	guid_program, err := s.repo.CreateProgramm(CellPP.Value)
+	guid_program, err := s.repo.CreateProgramm(CellPP.Value, CellDTValue)
 	if err != nil {
+		return err
+	}
+	if err := s.repo.CreateRelationship(guid_program, guid_faculty, "ProgrammFaculty"); err != nil {
 		return err
 	}
 	CellFT, _ := sheetTitel.Cell(41, xlsx.ColLettersToIndex("C"))
@@ -140,7 +145,7 @@ func (s *PlansService) CreatePlans(NameDiscipline string, ByteTable []byte) erro
 
 			final_dict := make(map[string]string)
 			fmt.Println(CellDT.Value)
-			final_dict[key_direction_training] = strings.TrimSuffix(strings.TrimPrefix(CellDT.Value, "Направление подготовки "), "_x000D_\n")
+			final_dict[key_direction_training] = CellDTValue
 			final_dict[key_training_profile] = CellPP.Value
 			final_dict[key_form_training] = CellFT_value
 			final_dict[key_qualification] = CellQ_value

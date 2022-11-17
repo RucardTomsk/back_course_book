@@ -25,6 +25,6 @@ func NewNeo4jDriver(cfg Config) (*neo4j.Driver, error) {
 
 func GetSession(d neo4j.Driver) neo4j.Session {
 	return d.NewSession(neo4j.SessionConfig{
-		DatabaseName: "coursebook",
+		DatabaseName: "coursebook2",
 	})
 }

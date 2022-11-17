@@ -30,11 +30,21 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	plan := router.Group("/plan")
 	{
-		plan.POST("/create-group-plans", h.createGroupPlans)
+		plan.POST("/create-group-plans/:guid_faculty", h.createGroupPlans)
 		plan.GET("/get-mas-plan/:guid_program", h.GetMasPlans)
 		plan.GET("/get-work-program/:guid_plan", h.GetWorkProgram)
 		plan.POST("/save-plan/:guid_plan/:key_field", h.SavePlan)
 		plan.GET("get-field-plan/:guid_plan/:key_field", h.GetField)
+	}
+
+	faculty := router.Group("/faculty")
+	{
+		faculty.GET("/get-mas-faculty", h.GetMasFaculty)
+	}
+
+	program := router.Group("/program")
+	{
+		program.GET("get-mas-program/:guid_faculty", h.GetMasProgram)
 	}
 
 	router.Use(cors.New(cors.Config{

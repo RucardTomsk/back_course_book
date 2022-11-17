@@ -13,21 +13,33 @@ type Authorization interface {
 type Plans interface {
 	CreatePlan(dict map[string]string) (string, error)
 	CreateRelationship(guid_node_a string, guid_node_b string, typeR string) error
-	CreateProgramm(name string) (string, error)
+	CreateProgramm(name string, directions string) (string, error)
 	GetMasPlan(guid_program string) ([]model.BriefPlan, error)
 	GetWorkProgram(guid_plan string) (model.FullPlan, error)
 	SavePlan(guid_plan string, key_field string, text string) error
 	GetField(guid_plan string, key_field string) (string, error)
 }
 
+type Faculty interface {
+	GetMasFaculte() ([]model.Faculty, error)
+}
+
+type Program interface {
+	GetMasProgram(guid_faculty string) ([]model.Program, error)
+}
+
 type Repository struct {
 	Authorization
 	Plans
+	Faculty
+	Program
 }
 
 func NewRepository(driver *neo4j.Driver) *Repository {
 	return &Repository{
 		Authorization: NewAuthRepository(driver),
 		Plans:         NewPlansRepository(driver),
+		Faculty:       NewFacultyRepository(driver),
+		Program:       NewProgramRepository(driver),
 	}
 }

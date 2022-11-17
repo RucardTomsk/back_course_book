@@ -1,7 +1,6 @@
 package handler
 
 import (
-	"bytes"
 	"io/ioutil"
 	"net/http"
 
@@ -9,10 +8,14 @@ import (
 )
 
 func (h *Handler) createGroupPlans(c *gin.Context) {
-	ByteBody, _ := ioutil.ReadAll(c.Request.Body)
-	c.Request.Body = ioutil.NopCloser(bytes.NewBuffer(ByteBody))
+	guid_faculty := c.Params.ByName("guid_faculty")
 
-	err := h.services.Plans.CreatePlans("", ByteBody)
+	formFile, _ := c.FormFile("file")
+	openedFile, _ := formFile.Open()
+	file, _ := ioutil.ReadAll(openedFile)
+
+	err := h.services.Plans.CreatePlans("", file, guid_faculty)
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return

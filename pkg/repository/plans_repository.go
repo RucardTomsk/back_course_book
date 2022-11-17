@@ -56,14 +56,15 @@ func (r *PlansRepository) CreatePlan(dict map[string]string) (string, error) {
 	return guid, nil
 }
 
-func (r *PlansRepository) CreateProgramm(name string) (string, error) {
+func (r *PlansRepository) CreateProgramm(name string, directions string) (string, error) {
 	session := GetSession(*r.driver)
 	defer session.Close()
 
 	guid := uuid.New().String()
-	_, err := session.Run("CREATE (:Programm {Name: $name, guid: $guid})", map[string]interface{}{
-		"name": name,
-		"guid": guid,
+	_, err := session.Run("CREATE (:Programm {Name: $name, Directions: $directions, guid: $guid})", map[string]interface{}{
+		"name":       name,
+		"directions": directions,
+		"guid":       guid,
 	})
 
 	if err != nil {
