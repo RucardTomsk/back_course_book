@@ -418,7 +418,7 @@ func get_form_control(_row int, sheet *xlsx.Sheet) (string, error) {
 		final_str += str_f_m + "\n"
 	}
 
-	return final_str[:len(final_str)-2], nil
+	return final_str[:len(final_str)-1], nil
 }
 
 func get_sum(_row int, max_col int, counter_semestr int, d_z int, wb *xlsx.File, sheet *xlsx.Sheet, key string) string {

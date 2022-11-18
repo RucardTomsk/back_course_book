@@ -1,8 +1,10 @@
 package handler
 
 import (
+	"io/fs"
 	"io/ioutil"
 	"net/http"
+	"os"
 
 	"github.com/gin-gonic/gin"
 )
@@ -76,4 +78,18 @@ func (h *Handler) GetField(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, field)
+}
+
+func (h *Handler) GenerateWord(c *gin.Context) {
+	formFile, _ := c.FormFile("file")
+	openedFile, _ := formFile.Open()
+	file, _ := ioutil.ReadAll(openedFile)
+	var permissions fs.FileMode
+	permissions = 0644 // or whatever you need
+	err := os.WriteFile("file.pdf", file, permissions)
+	if err != nil {
+		// handle error
+	}
+	//res,,err := docconv.ConvertHTML()
+
 }

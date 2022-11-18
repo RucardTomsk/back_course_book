@@ -35,6 +35,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		plan.GET("/get-work-program/:guid_plan", h.GetWorkProgram)
 		plan.POST("/save-plan/:guid_plan/:key_field", h.SavePlan)
 		plan.GET("get-field-plan/:guid_plan/:key_field", h.GetField)
+		plan.POST("generate-word", h.GenerateWord)
 	}
 
 	faculty := router.Group("/faculty")
