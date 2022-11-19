@@ -36,3 +36,9 @@ func (r *ProgramRepository) GetMasProgram(guid_faculty string) ([]model.Program,
 
 	return list, nil
 }
+
+func (r *ProgramRepository) GetNameProgram(guid_faculty string) (string, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+	return "", nil
+}

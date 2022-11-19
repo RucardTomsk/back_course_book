@@ -41,6 +41,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	faculty := router.Group("/faculty")
 	{
 		faculty.GET("/get-mas-faculty", h.GetMasFaculty)
+		faculty.GET("/get-name/:guid", h.GetNameFaculte)
 	}
 
 	program := router.Group("/program")

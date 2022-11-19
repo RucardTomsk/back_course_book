@@ -34,3 +34,22 @@ func (r *FacultyRepository) GetMasFaculte() ([]model.Faculty, error) {
 
 	return list, nil
 }
+
+func (r *FacultyRepository) GetNameFaculte(guid string) (string, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	result, err := session.Run("MATCH (f:Faculty) WHERE f.guid = $guid RETURN f.Name", map[string]interface{}{
+		"guid": guid,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	var namef string
+	if result.Next() {
+		namef = result.Record().Values[0].(string)
+	}
+
+	return namef, nil
+}

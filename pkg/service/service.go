@@ -21,6 +21,7 @@ type Plans interface {
 
 type Faculty interface {
 	GetMasFaculty() ([]model.Faculty, error)
+	GetNameFaculty(guid string) (string, error)
 }
 
 type Program interface {
