@@ -56,6 +56,28 @@ func (r *PlansRepository) CreatePlan(dict map[string]string) (string, error) {
 	return guid, nil
 }
 
+func (r *PlansRepository) GetNamePlans(guid string) ([]string, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	result, err := session.Run("MATCH (p:Plan)-[]-(pr:Programm)-[]->(f:Faculty) WHERE p.guid = $guid RETURN f.Name,pr.Name,p.Name,f.guid", map[string]interface{}{
+		"guid": guid,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	var mas []string
+	if result.Next() {
+		mas = append(mas, result.Record().Values[0].(string))
+		mas = append(mas, result.Record().Values[1].(string))
+		mas = append(mas, result.Record().Values[2].(string))
+		mas = append(mas, result.Record().Values[3].(string))
+	}
+
+	return mas, nil
+}
+
 func (r *PlansRepository) CreateProgramm(name string, directions string) (string, error) {
 	session := GetSession(*r.driver)
 	defer session.Close()
@@ -105,9 +127,10 @@ func (r *PlansRepository) GetMasPlan(guid_program string) ([]model.BriefPlan, er
 		prop := result.Record().Values[0].(neo4j.Node).Props
 
 		list = append(list, model.BriefPlan{
-			Code: prop["Code"].(string),
-			Name: prop["Name"].(string),
-			Guid: prop["guid"].(string),
+			Code:              prop["Code"].(string),
+			Name:              prop["Name"].(string),
+			Guid:              prop["guid"].(string),
+			SemesterMastering: prop["SemesterMastering"].(string),
 		})
 	}
 

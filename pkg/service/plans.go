@@ -59,8 +59,50 @@ type dictCompetenciesStruct struct {
 	dictComp map[string]string
 }
 
-func (s *PlansService) GetPlans(guid_programm string) ([]model.BriefPlan, error) {
-	return s.repo.GetMasPlan(guid_programm)
+func (s *PlansService) GetPlans(guid_programm string) (map[string][]model.BriefPlan, error) {
+	mas_plan, err := s.repo.GetMasPlan(guid_programm)
+	if err != nil {
+		return nil, err
+	}
+	dict_sort_plan := make(map[string][]model.BriefPlan)
+	test_key_mas := ""
+	for _, value := range mas_plan {
+		semestr_start := value.SemesterMastering
+		concrent_semestr_mas := strings.Split(semestr_start, "\n")
+		var mas_int_semestr []string
+		for _, str := range concrent_semestr_mas {
+			con_semestr := strings.Split(strings.Split(str, ",")[0], " ")[1]
+			mas_int_semestr = append(mas_int_semestr, con_semestr)
+		}
+		var key_semester string
+		if len(mas_int_semestr) > 1 {
+			key_semester = fmt.Sprintf("Семестры %s-%s", mas_int_semestr[0], mas_int_semestr[len(mas_int_semestr)-1])
+		} else {
+			key_semester = fmt.Sprintf("Семестр %s", mas_int_semestr[0])
+		}
+		if !strings.Contains(test_key_mas, key_semester) {
+			mas_brief := []model.BriefPlan{value}
+			dict_sort_plan[key_semester] = mas_brief
+			test_key_mas += key_semester + " "
+		} else {
+			dict_sort_plan[key_semester] = append(dict_sort_plan[key_semester], value)
+		}
+	}
+
+	keys := make([]string, 0, len(dict_sort_plan))
+	for k := range dict_sort_plan {
+		keys = append(keys, k)
+	}
+
+	sort.Strings(keys)
+
+	end_dict := make(map[string][]model.BriefPlan)
+
+	for _, k := range keys {
+		end_dict[k] = dict_sort_plan[k]
+	}
+
+	return end_dict, nil
 }
 
 func (s *PlansService) GetWorkProgram(guid_plan string) (model.FullPlan, error) {
@@ -73,6 +115,10 @@ func (s *PlansService) SavePlan(guid_plan string, key_field string, text string)
 
 func (s *PlansService) GetField(guid_plan string, key_field string) (string, error) {
 	return s.repo.GetField(guid_plan, key_field)
+}
+
+func (s *PlansService) GetNamePlans(guid string) ([]string, error) {
+	return s.repo.GetNamePlans(guid)
 }
 
 func (s *PlansService) CreatePlans(NameDiscipline string, ByteTable []byte, guid_faculty string) error {
@@ -394,7 +440,7 @@ func get_rezult_str(str_mas_cod string, dict_competencies map[string]dictCompete
 func get_form_control(_row int, sheet *xlsx.Sheet) (string, error) {
 	final_str := ""
 	mas_form_control := []string{"Экзамен", "Зачет", "Зачет с оценкой"}
-	var mas []string
+	dict := make(map[int]string)
 
 	for index := 3; index < 6; index++ {
 		cell, err := sheet.Cell(_row, index)
@@ -404,18 +450,20 @@ func get_form_control(_row int, sheet *xlsx.Sheet) (string, error) {
 		all_semester := cell.Value
 		if all_semester != "" {
 			for _, semester := range all_semester {
-				mas = append(mas, "Семестр "+string(semester)+", "+mas_form_control[index-3])
+				int_sem, _ := strconv.Atoi(string(semester))
+				dict[int_sem] = "Семестр " + string(semester) + ", " + mas_form_control[index-3]
 			}
 		}
 	}
 
-	sort.SliceStable(mas, func(i, j int) bool {
-		a, _ := strconv.Atoi(string(mas[i][8]))
-		b, _ := strconv.Atoi(string(mas[j][8]))
-		return a < b
-	})
-	for _, str_f_m := range mas {
-		final_str += str_f_m + "\n"
+	keys := make([]int, 0, len(dict))
+	for k := range dict {
+		keys = append(keys, k)
+	}
+
+	sort.Ints(keys)
+	for _, k := range keys {
+		final_str += dict[k] + "\n"
 	}
 
 	return final_str[:len(final_str)-1], nil

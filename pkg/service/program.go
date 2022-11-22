@@ -16,3 +16,7 @@ func NewProgramService(repo repository.Program) *ProgramService {
 func (s *ProgramService) GetMasProgram(guid_faculty string) ([]model.Program, error) {
 	return s.repo.GetMasProgram(guid_faculty)
 }
+
+func (s *ProgramService) GetNameProgramAndFaculty(guid_program string) ([]string, error) {
+	return s.repo.GetNameProgramAndFaculty(guid_program)
+}

@@ -6,17 +6,20 @@ import (
 )
 
 type Authorization interface {
-	CreateUser(user model.User) (int, error)
+	CreateUser(user model.User) error
 	GenerateToken(username string, password string) (string, error)
-	ParseToken(token string) (int, error)
+	ParseToken(accessToken string) (string, error)
+	GetUserFioByGuid(guid string) (string, error)
+	GetUserNotAccess(guid_node string) ([]model.User, error)
 }
 
 type Plans interface {
 	CreatePlans(NameDiscipline string, ByteTable []byte, guid_faculty string) error
-	GetPlans(guid_programm string) ([]model.BriefPlan, error)
+	GetPlans(guid_programm string) (map[string][]model.BriefPlan, error)
 	GetWorkProgram(guid_plan string) (model.FullPlan, error)
 	SavePlan(guid_plan string, key_field string, text string) error
 	GetField(guid_plan string, key_field string) (string, error)
+	GetNamePlans(guid string) ([]string, error)
 }
 
 type Faculty interface {
@@ -26,12 +29,20 @@ type Faculty interface {
 
 type Program interface {
 	GetMasProgram(guid_faculty string) ([]model.Program, error)
+	GetNameProgramAndFaculty(guid_program string) ([]string, error)
+}
+
+type Role interface {
+	CheckRoleAdmin(guid_user string) (bool, error)
+	IssueAccess(guid_user, guid_node string) (string, error)
+	CheckAccess(guid_user, guid_node string) (bool, error)
 }
 type Service struct {
 	Authorization
 	Plans
 	Faculty
 	Program
+	Role
 }
 
 func NewService(repos *repository.Repository) *Service {
@@ -40,5 +51,6 @@ func NewService(repos *repository.Repository) *Service {
 		Plans:         NewPlansService(repos.Plans),
 		Faculty:       NewFaculteService(repos.Faculty),
 		Program:       NewProgramService(repos.Program),
+		Role:          NewRoleService(repos.Role),
 	}
 }

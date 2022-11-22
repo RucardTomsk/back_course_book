@@ -6,8 +6,11 @@ import (
 )
 
 type Authorization interface {
-	CreateUser(user model.User) (int, error)
+	CreateUser(user model.User) error
 	GetUser(username string, password string) (model.User, error)
+	GetUserFIOByGuid(guid string) (string, error)
+	CheckAbsentEmail(email string) (bool, error)
+	GetUserNotAccess(guid_node string) ([]model.User, error)
 }
 
 type Plans interface {
@@ -18,6 +21,7 @@ type Plans interface {
 	GetWorkProgram(guid_plan string) (model.FullPlan, error)
 	SavePlan(guid_plan string, key_field string, text string) error
 	GetField(guid_plan string, key_field string) (string, error)
+	GetNamePlans(guid string) ([]string, error)
 }
 
 type Faculty interface {
@@ -27,6 +31,13 @@ type Faculty interface {
 
 type Program interface {
 	GetMasProgram(guid_faculty string) ([]model.Program, error)
+	GetNameProgramAndFaculty(guid_program string) ([]string, error)
+}
+
+type Role interface {
+	IssueAccess(guid_user, guid_node string) (string, error)
+	CheckRoleAdmin(guid_user string) (bool, error)
+	CheckAccess(guid_user, guid_node string) (bool, error)
 }
 
 type Repository struct {
@@ -34,6 +45,7 @@ type Repository struct {
 	Plans
 	Faculty
 	Program
+	Role
 }
 
 func NewRepository(driver *neo4j.Driver) *Repository {
@@ -42,5 +54,6 @@ func NewRepository(driver *neo4j.Driver) *Repository {
 		Plans:         NewPlansRepository(driver),
 		Faculty:       NewFacultyRepository(driver),
 		Program:       NewProgramRepository(driver),
+		Role:          NewRoleRepository(driver),
 	}
 }

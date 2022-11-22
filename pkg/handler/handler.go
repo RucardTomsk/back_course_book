@@ -23,19 +23,39 @@ func (h *Handler) InitRoutes() *gin.Engine {
 
 	auth := router.Group("/auth", h.userIdentity)
 	{
-		auth.POST("/sign-up", h.signUp)
-		auth.POST("/sign-in", h.signIn)
 		auth.POST("/test", h.test)
+		auth.GET("/get-user-fio", h.GetUserFIO)
+		auth.POST("/get-user-not-access", h.GetUserNotAccess)
+	}
+
+	auth_start := router.Group("/auth-start")
+	{
+		auth_start.POST("/register", h.register)
+		auth_start.POST("/login", h.login)
+	}
+
+	role := router.Group("/role", h.userIdentity)
+	{
+		role.POST("/issue-access", h.IssueAccess)
+		role.POST("/check-admin", h.CheackAdmin)
+		role.POST("/check-access", h.CheackAccess)
 	}
 
 	plan := router.Group("/plan")
 	{
-		plan.POST("/create-group-plans/:guid_faculty", h.createGroupPlans)
 		plan.GET("/get-mas-plan/:guid_program", h.GetMasPlans)
 		plan.GET("/get-work-program/:guid_plan", h.GetWorkProgram)
-		plan.POST("/save-plan/:guid_plan/:key_field", h.SavePlan)
 		plan.GET("get-field-plan/:guid_plan/:key_field", h.GetField)
 		plan.POST("generate-word", h.GenerateWord)
+		plan.GET("/get-name/:guid", h.GetNamePlans)
+		plan.POST("/create-group-plans/:guid_faculty", h.createGroupPlans)
+		plan.POST("/save-plan/:guid_plan/:key_field", h.SavePlan)
+	}
+
+	plan_auth := router.Group("/plan-auth", h.userIdentity)
+	{
+		plan_auth.POST("/create-group-plans/:guid_faculty", h.createGroupPlans)
+		plan_auth.POST("/save-plan/:guid_plan/:key_field", h.SavePlan)
 	}
 
 	faculty := router.Group("/faculty")
@@ -47,12 +67,13 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	program := router.Group("/program")
 	{
 		program.GET("get-mas-program/:guid_faculty", h.GetMasProgram)
+		program.GET("get-name-p-and-f/:guid", h.GetNameProgramAndFaculty)
 	}
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:8080"},
+		AllowOrigins:     []string{"http://localhost:8080", "http://192.168.1.56:8080"},
 		AllowMethods:     []string{"PUT", "PATCH", "POST", "GET"},
-		AllowHeaders:     []string{"Origin", "X-Requested-With", "Content-Type", "Accept"},
+		AllowHeaders:     []string{"Origin", "X-Requested-With", "Content-Type", "Accept", "Authorization"},
 		ExposeHeaders:    []string{"Content-Type"},
 		AllowCredentials: true,
 		MaxAge:           12 * time.Hour,

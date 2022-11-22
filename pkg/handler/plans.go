@@ -17,7 +17,7 @@ func (h *Handler) createGroupPlans(c *gin.Context) {
 	file, _ := ioutil.ReadAll(openedFile)
 
 	err := h.services.Plans.CreatePlans("", file, guid_faculty)
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -33,7 +33,7 @@ func (h *Handler) GetMasPlans(c *gin.Context) {
 		return
 	}
 	//fmt.Println(mas)
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, mas)
 }
 
@@ -44,7 +44,7 @@ func (h *Handler) GetWorkProgram(c *gin.Context) {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, workProgram)
 }
 
@@ -57,20 +57,20 @@ func (h *Handler) SavePlan(c *gin.Context) {
 
 	var rt RequestTask
 	if err := c.ShouldBindJSON(&rt); err != nil {
-		c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+		c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
 	}
 
 	h.services.Plans.SavePlan(guid_plan, key_field, rt.Text)
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	c.JSON(http.StatusOK, nil)
 }
 
 func (h *Handler) GetField(c *gin.Context) {
 	guid_plan := c.Params.ByName("guid_plan")
 	key_field := c.Params.ByName("key_field")
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	field, err := h.services.Plans.GetField(guid_plan, key_field)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
@@ -92,4 +92,16 @@ func (h *Handler) GenerateWord(c *gin.Context) {
 	}
 	//res,,err := docconv.ConvertHTML()
 
+}
+
+func (h *Handler) GetNamePlans(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	guid_plan := c.Params.ByName("guid")
+	mas, err := h.services.GetNamePlans(guid_plan)
+	if err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, mas)
 }

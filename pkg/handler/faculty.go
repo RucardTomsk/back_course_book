@@ -8,7 +8,7 @@ import (
 
 func (h *Handler) GetMasFaculty(c *gin.Context) {
 	faculty, err := h.services.GetMasFaculty()
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())
 		return
@@ -19,7 +19,7 @@ func (h *Handler) GetMasFaculty(c *gin.Context) {
 
 func (h *Handler) GetNameFaculte(c *gin.Context) {
 	guid := c.Params.ByName("guid")
-	c.Writer.Header().Set("Access-Control-Allow-Origin", "http://localhost:8080")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
 	namef, err := h.services.GetNameFaculty(guid)
 	if err != nil {
 		newErrorResponse(c, http.StatusBadRequest, err.Error())

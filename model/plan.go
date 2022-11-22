@@ -59,5 +59,7 @@ type BriefPlan struct {
 	Name string `json:"name"`
 	//guid
 	Guid string `json:"guid"`
-	//Форма обучения
+	//Семетры
+	//Семестр(ы) освоения
+	SemesterMastering string
 }
