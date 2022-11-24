@@ -117,7 +117,7 @@ func (r *PlansRepository) GetMasPlan(guid_program string) ([]model.BriefPlan, er
 	defer session.Close()
 
 	var list []model.BriefPlan
-	result, err := session.Run("MATCH (plan)-[]->(programm) WHERE programm.guid = $guid_programm RETURN plan", map[string]interface{}{
+	result, err := session.Run("MATCH (plan:Plan)-[]->(programm) WHERE programm.guid = $guid_programm RETURN plan", map[string]interface{}{
 		"guid_programm": guid_program,
 	})
 	if err != nil {

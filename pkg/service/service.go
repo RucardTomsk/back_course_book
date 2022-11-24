@@ -7,10 +7,13 @@ import (
 
 type Authorization interface {
 	CreateUser(user model.User) error
-	GenerateToken(username string, password string) (string, error)
+	GenerateToken(email string, password string) (string, string, error)
 	ParseToken(accessToken string) (string, error)
 	GetUserFioByGuid(guid string) (string, error)
 	GetUserNotAccess(guid_node string) ([]model.User, error)
+	GenerateRefreshToken() (string, error)
+	IssueSessionUser(user model.User, refreshToken string) error
+	GetUserToRefreshToken(refreshToken string) (model.User, error)
 }
 
 type Plans interface {

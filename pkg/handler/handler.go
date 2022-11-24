@@ -25,13 +25,14 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		auth.POST("/test", h.test)
 		auth.GET("/get-user-fio", h.GetUserFIO)
-		auth.POST("/get-user-not-access", h.GetUserNotAccess)
+		auth.POST("/get-user-not-access/:guid", h.GetUserNotAccess)
 	}
 
 	auth_start := router.Group("/auth-start")
 	{
 		auth_start.POST("/register", h.register)
 		auth_start.POST("/login", h.login)
+		auth_start.POST("/check-datatime-token", h.CheckToken)
 	}
 
 	role := router.Group("/role", h.userIdentity)

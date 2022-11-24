@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"fmt"
+
 	"github.com/RucardTomsk/course_book/model"
 	"github.com/google/uuid"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
@@ -79,12 +81,13 @@ func (r *AuthRepository) GetUserNotAccess(guid_node string) ([]model.User, error
 	defer session.Close()
 
 	var mas_user []model.User
-	result, err := session.Run("MATCH (n) WHERE n.guid=$guid_node MATCH (u:User) WHERE NOT (u)-[:access]->(n) AND (:Admin)-[:role]->(u) RETURN u", map[string]interface{}{
+	result, err := session.Run("MATCH (n) WHERE n.guid=$guid_node MATCH (u:User) WHERE NOT (u)-[:access]->(n) AND NOT (:Admin)-[:role]->(u) RETURN u", map[string]interface{}{
 		"guid_node": guid_node,
 	})
 	if err != nil {
 		return nil, err
 	}
+	fmt.Println(guid_node)
 	for result.Next() {
 		props := result.Record().Values[0].(neo4j.Node).Props
 
@@ -92,6 +95,10 @@ func (r *AuthRepository) GetUserNotAccess(guid_node string) ([]model.User, error
 			FIO:  props["FIO"].(string),
 			Guid: props["guid"].(string),
 		})
+	}
+
+	if err := result.Err(); err != nil {
+		return nil, err
 	}
 
 	return mas_user, nil
@@ -113,5 +120,55 @@ func (r *AuthRepository) GetUserFIOByGuid(guid string) (string, error) {
 		return result.Record().Values[0].(string), nil
 	} else {
 		return "", ErrRecordNotFound
+	}
+}
+
+func (r *AuthRepository) IssueSessionUser(user model.User, refreshToken string) error {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	result, err := session.Run("MATCH (s:Session)-[:session]->(u:User) WHERE u.guid = $guid_user RETURN s", map[string]interface{}{
+		"guid_user": user.Guid,
+	})
+	if err != nil {
+		return err
+	}
+
+	if !result.Next() {
+		_, err := session.Run("MATCH (u:User) WHERE u.guid = $guid_user CREATE (s:Session {refreshToken: $refreshToken}) CREATE (s)-[:session]->(u)", map[string]interface{}{
+			"guid_user":    user.Guid,
+			"refreshToken": refreshToken,
+		})
+		if err != nil {
+			return err
+		}
+	} else {
+		_, err := session.Run("MATCH (s)-[:session]->(u:User) WHERE u.guid = $guid_user SET s.refreshToken = $refreshToken", map[string]interface{}{
+			"guid_user":    user.Guid,
+			"refreshToken": refreshToken,
+		})
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (r *AuthRepository) GetUserToRefreshToken(refreshToken string) (model.User, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	result, err := session.Run("MATCH (s:Session)-[:session]-(u:User) WHERE s.refreshToken = $refreshToken RETURN u.email, u.password", map[string]interface{}{
+		"refreshToken": refreshToken,
+	})
+	if err != nil {
+		return model.User{}, err
+	}
+
+	if result.Next() {
+		return r.GetUser(result.Record().Values[0].(string), result.Record().Values[0].(string))
+	} else {
+		return model.User{}, ErrRecordNotFound
 	}
 }

@@ -11,6 +11,8 @@ type Authorization interface {
 	GetUserFIOByGuid(guid string) (string, error)
 	CheckAbsentEmail(email string) (bool, error)
 	GetUserNotAccess(guid_node string) ([]model.User, error)
+	IssueSessionUser(user model.User, refreshToken string) error
+	GetUserToRefreshToken(refreshToken string) (model.User, error)
 }
 
 type Plans interface {

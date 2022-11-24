@@ -18,7 +18,7 @@ func (r *ProgramRepository) GetMasProgram(guid_faculty string) ([]model.Program,
 	defer session.Close()
 
 	var list []model.Program
-	result, err := session.Run("MATCH (program)-[]->(faculty) WHERE faculty.guid = $guid RETURN program", map[string]interface{}{
+	result, err := session.Run("MATCH (program:Programm)-[]->(faculty) WHERE faculty.guid = $guid RETURN program", map[string]interface{}{
 		"guid": guid_faculty,
 	})
 	if err != nil {

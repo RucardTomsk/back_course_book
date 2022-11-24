@@ -1,8 +1,6 @@
 package repository
 
 import (
-	"fmt"
-
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -17,20 +15,21 @@ func NewRoleRepository(driver *neo4j.Driver) *RoleRepository {
 func (r *RoleRepository) IssueAccess(guid_user, guid_node string) (string, error) {
 	session := GetSession(*r.driver)
 	defer session.Close()
-	fmt.Println(guid_user, guid_node)
 
-	result, err := session.Run("MATCH (u:User),(n) WHERE u.guid = $guid_user AND n.guid = $guid_node CREATE (u)-[:access]->(n) RETURN labels(n)", map[string]interface{}{
+	result, err := session.Run("MATCH (u:User),(n) WHERE u.guid = $guid_user AND n.guid = $guid_node CREATE (u)-[:access]->(n) RETURN distinct labels(n)", map[string]interface{}{
 		"guid_user": guid_user,
 		"guid_node": guid_node,
 	})
 	if err != nil {
 		return "", err
 	}
+
 	if result.Next() {
-		return result.Record().Values[0].(string), nil
-	} else {
-		return "", ErrRecordNotFound
+		for _, value := range result.Record().Values[0].([]interface{}) {
+			return value.(string), nil
+		}
 	}
+	return "", ErrRecordNotFound
 }
 
 func (r *RoleRepository) CheckRoleAdmin(guid_user string) (bool, error) {
