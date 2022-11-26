@@ -40,7 +40,7 @@ func (r *ProgramRepository) GetMasProgram(guid_faculty string) ([]model.Program,
 func (r *ProgramRepository) GetNameProgramAndFaculty(guid_program string) ([]string, error) {
 	session := GetSession(*r.driver)
 	defer session.Close()
-	result, err := session.Run("MATCH (program)-[]->(faculty) WHERE program.guid = $guid RETURN program.Name,faculty.Name", map[string]interface{}{
+	result, err := session.Run("MATCH (program)-[]->(faculty) WHERE program.guid = $guid RETURN program.Name,faculty.Name,faculty.guid", map[string]interface{}{
 		"guid": guid_program,
 	})
 
@@ -52,6 +52,7 @@ func (r *ProgramRepository) GetNameProgramAndFaculty(guid_program string) ([]str
 	if result.Next() {
 		mas_s = append(mas_s, result.Record().Values[0].(string))
 		mas_s = append(mas_s, result.Record().Values[1].(string))
+		mas_s = append(mas_s, result.Record().Values[2].(string))
 	}
 
 	return mas_s, nil

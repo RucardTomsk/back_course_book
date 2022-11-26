@@ -40,6 +40,8 @@ type Role interface {
 	IssueAccess(guid_user, guid_node string) (string, error)
 	CheckRoleAdmin(guid_user string) (bool, error)
 	CheckAccess(guid_user, guid_node string) (bool, error)
+	CreateInvite(guid_node string) (string, error)
+	UseInvite(guid_invite, guid_user string) error
 }
 
 type Repository struct {

@@ -21,3 +21,10 @@ func (s *RoleService) IssueAccess(guid_user, guid_node string) (string, error) {
 func (s *RoleService) CheckAccess(guid_user, guid_node string) (bool, error) {
 	return s.repo.CheckAccess(guid_user, guid_node)
 }
+
+func (s *RoleService) CreateInvite(guid_node string) (string, error) {
+	return s.repo.CreateInvite(guid_node)
+}
+func (s *RoleService) UseInvite(guid_invite, guid_user string) error {
+	return s.repo.UseInvite(guid_invite, guid_user)
+}

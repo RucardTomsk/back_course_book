@@ -7,6 +7,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/RucardTomsk/course_book/model"
 	"github.com/RucardTomsk/course_book/pkg/repository"
@@ -121,6 +122,15 @@ func (s *PlansService) GetNamePlans(guid string) ([]string, error) {
 	return s.repo.GetNamePlans(guid)
 }
 
+func IsEngByLoop(str string) bool {
+	for i := 0; i < len(str); i++ {
+		if str[i] > unicode.MaxASCII {
+			return false
+		}
+	}
+	return true
+}
+
 func (s *PlansService) CreatePlans(NameDiscipline string, ByteTable []byte, guid_faculty string) error {
 	logrus.Info("Start CreatePlans")
 
@@ -227,7 +237,12 @@ func (s *PlansService) CreatePlans(NameDiscipline string, ByteTable []byte, guid
 			final_dict[key_C] = get_sum(_row, max_cols, count_sermestr, d_z, wb, sheetPlan, "Сем")
 			final_dict[key_P] = get_sum(_row, max_cols, count_sermestr, d_z, wb, sheetPlan, "Пр")
 			final_dict[key_LR] = get_sum(_row, max_cols, count_sermestr, d_z, wb, sheetPlan, "Лаб")
-			final_dict[key_ImplementationLanguage] = "Русский"
+
+			if IsEngByLoop(final_dict[key_training_profile]) {
+				final_dict[key_ImplementationLanguage] = "Английский"
+			} else {
+				final_dict[key_ImplementationLanguage] = "Русский"
+			}
 			final_dict[key_NameFacylte] = CellNameF.Value
 
 			mas_key := []string{

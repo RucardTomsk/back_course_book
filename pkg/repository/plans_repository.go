@@ -207,7 +207,6 @@ func (r *PlansRepository) GetField(guid_plan string, key_field string) (string, 
 	session := GetSession(*r.driver)
 	defer session.Close()
 
-	var field string
 	ru := []rune(key_field)
 	ru[0] = unicode.ToUpper(ru[0])
 	key_field = string(ru)
@@ -219,8 +218,8 @@ func (r *PlansRepository) GetField(guid_plan string, key_field string) (string, 
 	}
 
 	if result.Next() {
-		field = result.Record().Values[0].(string)
+		return result.Record().Values[0].(string), nil
 	}
 
-	return field, nil
+	return "", ErrRecordNotFound
 }

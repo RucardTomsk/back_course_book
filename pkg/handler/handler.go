@@ -40,13 +40,15 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		role.POST("/issue-access", h.IssueAccess)
 		role.POST("/check-admin", h.CheackAdmin)
 		role.POST("/check-access", h.CheackAccess)
+		role.POST("/createInvite", h.createInvite)
+		role.POST("/useInvite", h.useInvite)
 	}
 
 	plan := router.Group("/plan")
 	{
 		plan.GET("/get-mas-plan/:guid_program", h.GetMasPlans)
 		plan.GET("/get-work-program/:guid_plan", h.GetWorkProgram)
-		plan.GET("get-field-plan/:guid_plan/:key_field", h.GetField)
+		plan.GET("/get-field-plan/:guid_plan/:key_field", h.GetField)
 		plan.POST("generate-word", h.GenerateWord)
 		plan.GET("/get-name/:guid", h.GetNamePlans)
 		plan.POST("/create-group-plans/:guid_faculty", h.createGroupPlans)

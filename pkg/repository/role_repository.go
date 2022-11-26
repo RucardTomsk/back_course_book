@@ -1,6 +1,7 @@
 package repository
 
 import (
+	"github.com/google/uuid"
 	"github.com/neo4j/neo4j-go-driver/v4/neo4j"
 )
 
@@ -66,5 +67,65 @@ func (r *RoleRepository) CheckAccess(guid_user, guid_node string) (bool, error) 
 		return true, nil
 	} else {
 		return false, nil
+	}
+}
+
+func (r *RoleRepository) CreateInvite(guid_node string) (string, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	guid := uuid.New().String()
+	result, err := session.Run("CREATE (i: Invite {guid:$guid, guidNode:$guidNode}) RETURN i.guid", map[string]interface{}{
+		"guid":     guid,
+		"guidNode": guid_node,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	if result.Next() {
+		return result.Record().Values[0].(string), nil
+	} else {
+		return "", ErrRecordNotFound
+	}
+}
+
+func (r *RoleRepository) UseInvite(guid_invite, guid_user string) error {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	guid_node, err := r.GetNodeToInvite(guid_invite)
+	if err != nil {
+		return err
+	}
+	_, err = r.IssueAccess(guid_user, guid_node)
+	if err != nil {
+		return err
+	}
+
+	_, err = session.Run("MATCH (i: Invite) WHERE i.guid = $guidInvite DELETE i", map[string]interface{}{
+		"guidInvite": guid_invite,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+func (r *RoleRepository) GetNodeToInvite(guid_invite string) (string, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	result, err := session.Run("MATCH (i:Invite) WHERE i.guid = $guidInvite RETURN i.guidNode", map[string]interface{}{
+		"guidInvite": guid_invite,
+	})
+	if err != nil {
+		return "", err
+	}
+	if result.Next() {
+		return result.Record().Values[0].(string), nil
+	} else {
+		return "", ErrRecordNotFound
 	}
 }
