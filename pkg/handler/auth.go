@@ -129,3 +129,90 @@ func (h *Handler) CheckToken(c *gin.Context) {
 
 	c.JSON(http.StatusOK, nil)
 }
+
+type EmailS struct {
+	Email string
+}
+
+func (h *Handler) CreateResetPassword(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var sEmail EmailS
+
+	if err := c.BindJSON(&sEmail); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	user, err := h.services.Authorization.GetUserByEmail(sEmail.Email)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.services.Authorization.CreateResetPassword(user); err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}
+
+type EmailSAndCode struct {
+	Email string
+	Code  string
+}
+
+func (h *Handler) CheckResetPassword(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var sEmailCode EmailSAndCode
+
+	if err := c.BindJSON(&sEmailCode); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	user, err := h.services.Authorization.GetUserByEmail(sEmailCode.Email)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.services.Authorization.CheckResetPassword(sEmailCode.Code, user); err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}
+
+type EmailSAndPass struct {
+	Email string
+	Pass  string
+}
+
+func (h *Handler) UserResetPassword(c *gin.Context) {
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+
+	var sEmailPass EmailSAndPass
+
+	if err := c.BindJSON(&sEmailPass); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	user, err := h.services.Authorization.GetUserByEmail(sEmailPass.Email)
+	if err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	if err := h.services.Authorization.UserResetPassword(user, sEmailPass.Pass); err != nil {
+		newErrorResponse(c, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+
+}

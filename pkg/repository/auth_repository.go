@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/RucardTomsk/course_book/model"
 	"github.com/google/uuid"
@@ -52,6 +53,30 @@ func (r *AuthRepository) GetUser(email string, password string) (model.User, err
 		user.FIO = result.Record().Values[1].(string)
 		user.Email = email
 		user.Password = password
+	} else {
+		return user, ErrRecordNotFound
+	}
+
+	return user, nil
+}
+
+func (r *AuthRepository) GetUserByEmail(email string) (model.User, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	var user model.User
+	result, err := session.Run("MATCH (n:User) WHERE n.Email = $1 RETURN n.guid, n.FIO", map[string]interface{}{
+		"1": email,
+	})
+
+	if err != nil {
+		return user, err
+	}
+
+	if result.Next() {
+		user.Guid = result.Record().Values[0].(string)
+		user.FIO = result.Record().Values[1].(string)
+		user.Email = email
 	} else {
 		return user, ErrRecordNotFound
 	}
@@ -171,4 +196,67 @@ func (r *AuthRepository) GetUserToRefreshToken(refreshToken string) (model.User,
 	} else {
 		return model.User{}, ErrRecordNotFound
 	}
+}
+
+func (r *AuthRepository) CreateResetPassword(user model.User) (string, error) {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	guid := uuid.New().String()
+	_, err := session.Run("CREATE (r:resetPassword {guid:$guid, code:$code})", map[string]interface{}{
+		"guid": guid,
+		"code": strings.Split(guid, "-")[0],
+	})
+	if err != nil {
+		return "", err
+	}
+	_, err = session.Run("MATCH (u:User), (r:resetPassword) WHERE u.guid = $user_guid and r.guid = $guid CREATE (r)-[:reset]->(u)", map[string]interface{}{
+		"guid":      guid,
+		"user_guid": user.Guid,
+	})
+	if err != nil {
+		return "", err
+	}
+
+	return strings.Split(guid, "-")[0], err
+}
+
+func (r *AuthRepository) CheckResetPassword(code string, user model.User) error {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	result, err := session.Run("MATCH (r:resetPassword)-[:reset]->(u:User) WHERE u.guid=$user_guid and r.code=$code RETURN r.guid", map[string]interface{}{
+		"user_guid": user.Guid,
+		"code":      code,
+	})
+	if err != nil {
+		return err
+	}
+
+	if !result.Next() {
+		return ErrRecordNotFound
+	} else {
+		return nil
+	}
+}
+
+func (r *AuthRepository) UserResetPassword(user model.User, newPassword string) error {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	_, err := session.Run("MATCH (r:resetPassword)-[rr:reset]->(u:User) WHERE u.guid=$user_guid DELETE rr DELETE r", map[string]interface{}{
+		"user_guid": user.Guid,
+	})
+	if err != nil {
+		return err
+	}
+	_, err = session.Run("MATCH (u:User) WHERE u.guid=$user_guid SET u.Password = $newPassword", map[string]interface{}{
+		"user_guid":   user.Guid,
+		"newPassword": newPassword,
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

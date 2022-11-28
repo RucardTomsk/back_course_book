@@ -14,6 +14,10 @@ type Authorization interface {
 	GenerateRefreshToken() (string, error)
 	IssueSessionUser(user model.User, refreshToken string) error
 	GetUserToRefreshToken(refreshToken string) (model.User, error)
+	CreateResetPassword(user model.User) error
+	CheckResetPassword(code string, user model.User) error
+	UserResetPassword(user model.User, newPassword string) error
+	GetUserByEmail(email string) (model.User, error)
 }
 
 type Plans interface {

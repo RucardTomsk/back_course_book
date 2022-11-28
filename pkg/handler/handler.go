@@ -33,6 +33,9 @@ func (h *Handler) InitRoutes() *gin.Engine {
 		auth_start.POST("/register", h.register)
 		auth_start.POST("/login", h.login)
 		auth_start.POST("/check-datatime-token", h.CheckToken)
+		auth_start.POST("/create-reset-password", h.CreateResetPassword)
+		auth_start.POST("/check-reset-password", h.CheckResetPassword)
+		auth_start.POST("/use-reset-password", h.UserResetPassword)
 	}
 
 	role := router.Group("/role", h.userIdentity)

@@ -5,11 +5,14 @@ import (
 	"errors"
 	"fmt"
 	"math/rand"
+	"os"
 	"time"
 
 	"github.com/RucardTomsk/course_book/model"
 	"github.com/RucardTomsk/course_book/pkg/repository"
 	"github.com/golang-jwt/jwt"
+	"github.com/joho/godotenv"
+	"gopkg.in/gomail.v2"
 )
 
 const (
@@ -127,4 +130,41 @@ func encryptString(password string) string {
 	hash.Write([]byte(password))
 
 	return fmt.Sprintf("%x", hash.Sum([]byte(salt)))
+}
+
+func (s *AuthService) CreateResetPassword(user model.User) error {
+	code, err := s.repo.CreateResetPassword(user)
+	if err != nil {
+		return err
+	}
+	msg := gomail.NewMessage()
+	msg.SetHeader("From", "course-book@tsu.ru")
+	msg.SetHeader("To", user.Email)
+	msg.SetHeader("Subject", "Восстановление аккаунта")
+	msg.SetBody("text/html", fmt.Sprintf(`<p>Ваш код восстановление пароля для аккаунта "%s"</p>
+										<p><strong>%s</strong></p>`, user.Email, code))
+
+	if err := godotenv.Load(); err != nil {
+		panic(err)
+	}
+	n := gomail.NewDialer("smtp.gmail.com", 465, "www.carat.ru@gmail.com", os.Getenv("PASS_EMAIL"))
+
+	// Send the email
+	if err := n.DialAndSend(msg); err != nil {
+		panic(err)
+	}
+
+	return nil
+}
+
+func (s *AuthService) CheckResetPassword(code string, user model.User) error {
+	return s.repo.CheckResetPassword(code, user)
+}
+
+func (s *AuthService) UserResetPassword(user model.User, newPassword string) error {
+	return s.repo.UserResetPassword(user, encryptString(newPassword))
+}
+
+func (s *AuthService) GetUserByEmail(email string) (model.User, error) {
+	return s.repo.GetUserByEmail(email)
 }

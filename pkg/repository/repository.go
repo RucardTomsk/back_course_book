@@ -13,6 +13,10 @@ type Authorization interface {
 	GetUserNotAccess(guid_node string) ([]model.User, error)
 	IssueSessionUser(user model.User, refreshToken string) error
 	GetUserToRefreshToken(refreshToken string) (model.User, error)
+	UserResetPassword(user model.User, newPassword string) error
+	CheckResetPassword(code string, user model.User) error
+	CreateResetPassword(user model.User) (string, error)
+	GetUserByEmail(email string) (model.User, error)
 }
 
 type Plans interface {
