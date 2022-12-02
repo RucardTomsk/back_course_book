@@ -28,6 +28,7 @@ type Plans interface {
 	SavePlan(guid_plan string, key_field string, text string) error
 	GetField(guid_plan string, key_field string) (string, error)
 	GetNamePlans(guid string) ([]string, error)
+	CloneFieldPlan(guid_from, guid_to string) error
 }
 
 type Faculty interface {

@@ -62,6 +62,7 @@ func (h *Handler) InitRoutes() *gin.Engine {
 	{
 		plan_auth.POST("/create-group-plans/:guid_faculty", h.createGroupPlans)
 		plan_auth.POST("/save-plan/:guid_plan/:key_field", h.SavePlan)
+		plan_auth.POST("/copy-plan/:guid_to/:guid_from", h.CopyPlan)
 	}
 
 	faculty := router.Group("/faculty")

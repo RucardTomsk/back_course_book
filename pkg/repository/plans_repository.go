@@ -223,3 +223,54 @@ func (r *PlansRepository) GetField(guid_plan string, key_field string) (string, 
 
 	return "", ErrRecordNotFound
 }
+
+func (r *PlansRepository) CloneFieldPlan(guid_from, guid_to string) error {
+	session := GetSession(*r.driver)
+	defer session.Close()
+
+	from_workProgramm, err := r.GetWorkProgram(guid_from)
+	if err != nil {
+		return err
+	}
+
+	from_workProgrammHTML, err := r.GetWorkProgram(guid_from + "_html")
+	if err != nil {
+		return err
+	}
+
+	_, err = session.Run("MATCH (n:Plan) WHERE n.guid = $guid_to SET n.ContentDiscipline = $ContentDiscipline, n.CurrentControl	= $CurrentControl, n.DevelopmentMastering = $DevelopmentMastering, n.EntranceRequirements = $EntranceRequirements, n.EvaluationProcedure = $EvaluationProcedure, n.InformationDevelopers = $InformationDevelopers, n.ListInformationTechnologies = $ListInformationTechnologies, n.MaterialSupport = $MaterialSupport, n.MethodologicalSupport = $MethodologicalSupport, n.References = $References", map[string]interface{}{
+		"ContentDiscipline":           from_workProgramm.ContentDiscipline,
+		"CurrentControl":              from_workProgramm.CurrentControl,
+		"DevelopmentMastering":        from_workProgramm.DevelopmentMastering,
+		"EntranceRequirements":        from_workProgramm.EntranceRequirements,
+		"EvaluationProcedure":         from_workProgramm.EvaluationProcedure,
+		"InformationDevelopers":       from_workProgramm.InformationDevelopers,
+		"ListInformationTechnologies": from_workProgramm.ListInformationTechnologies,
+		"MaterialSupport":             from_workProgramm.MaterialSupport,
+		"MethodologicalSupport":       from_workProgramm.MethodologicalSupport,
+		"References":                  from_workProgramm.References,
+		"guid_to":                     guid_to,
+	})
+	if err != nil {
+		return err
+	}
+
+	_, err = session.Run("MATCH (n:PlanHTML) WHERE n.guid = $guid_to SET n.ContentDiscipline = $ContentDiscipline, n.CurrentControl	= $CurrentControl, n.DevelopmentMastering = $DevelopmentMastering, n.EntranceRequirements = $EntranceRequirements, n.EvaluationProcedure = $EvaluationProcedure, n.InformationDevelopers = $InformationDevelopers, n.ListInformationTechnologies = $ListInformationTechnologies, n.MaterialSupport = $MaterialSupport, n.MethodologicalSupport = $MethodologicalSupport, n.References = $References", map[string]interface{}{
+		"ContentDiscipline":           from_workProgrammHTML.ContentDiscipline,
+		"CurrentControl":              from_workProgrammHTML.CurrentControl,
+		"DevelopmentMastering":        from_workProgrammHTML.DevelopmentMastering,
+		"EntranceRequirements":        from_workProgrammHTML.EntranceRequirements,
+		"EvaluationProcedure":         from_workProgrammHTML.EvaluationProcedure,
+		"InformationDevelopers":       from_workProgrammHTML.InformationDevelopers,
+		"ListInformationTechnologies": from_workProgrammHTML.ListInformationTechnologies,
+		"MaterialSupport":             from_workProgrammHTML.MaterialSupport,
+		"MethodologicalSupport":       from_workProgrammHTML.MethodologicalSupport,
+		"References":                  from_workProgrammHTML.References,
+		"guid_to":                     guid_to + "_html",
+	})
+	if err != nil {
+		return err
+	}
+
+	return nil
+}

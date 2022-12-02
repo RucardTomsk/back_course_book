@@ -80,6 +80,18 @@ func (h *Handler) GetField(c *gin.Context) {
 	c.JSON(http.StatusOK, field)
 }
 
+func (h *Handler) CopyPlan(c *gin.Context) {
+	guid_from := c.Params.ByName("guid_from")
+	guid_to := c.Params.ByName("guid_to")
+	c.Writer.Header().Set("Access-Control-Allow-Origin", "*")
+	if err := h.services.Plans.CloneFieldPlan(guid_from, guid_to); err != nil {
+		newErrorResponse(c, http.StatusBadRequest, err.Error())
+		return
+	}
+
+	c.JSON(http.StatusOK, nil)
+}
+
 func (h *Handler) GenerateWord(c *gin.Context) {
 	formFile, _ := c.FormFile("file")
 	openedFile, _ := formFile.Open()

@@ -60,6 +60,10 @@ type dictCompetenciesStruct struct {
 	dictComp map[string]string
 }
 
+func (s *PlansService) CloneFieldPlan(guid_from, guid_to string) error {
+	return s.repo.CloneFieldPlan(guid_from, guid_to)
+}
+
 func (s *PlansService) GetPlans(guid_programm string) (map[string][]model.BriefPlan, error) {
 	mas_plan, err := s.repo.GetMasPlan(guid_programm)
 	if err != nil {
